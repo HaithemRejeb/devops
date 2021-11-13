@@ -15,20 +15,16 @@ import org.springframework.web.bind.annotation.RestController;
 
 import tn.esprit.spring.dto.*;
 import tn.esprit.spring.entities.*;
-import tn.esprit.spring.services.IEmployeService;
+
 import tn.esprit.spring.services.IEntrepriseService;
-import tn.esprit.spring.services.ITimesheetService;
 
 @RestController
 public class RestControlEntreprise {
 
 	
 	@Autowired
-	IEmployeService iemployeservice;
-	@Autowired
 	IEntrepriseService ientrepriseservice;
-	@Autowired
-	ITimesheetService itimesheetservice;
+	
 	@Autowired
 	private ModelMapper mapper;
 		
