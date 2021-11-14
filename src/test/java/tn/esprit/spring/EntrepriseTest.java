@@ -21,7 +21,7 @@ import tn.esprit.spring.services.IEntrepriseService;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class EntreprieTest {
+public class EntrepriseTest {
 	
 	
 	
