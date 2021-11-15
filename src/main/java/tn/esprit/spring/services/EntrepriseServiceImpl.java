@@ -38,25 +38,18 @@ public class EntrepriseServiceImpl implements IEntrepriseService {
 		return dep.getId();
 	}
 	
-	public void affecterDepartementAEntreprise(int depId, int entrepriseId) {
-		//Le bout Master de cette relation N:1 est departement  
-				//donc il faut rajouter l'entreprise a departement 
-				// ==> c'est l'objet departement(le master) qui va mettre a jour l'association
-				//Rappel : la classe qui contient mappedBy represente le bout Slave
-				//Rappel : Dans une relation oneToMany le mappedBy doit etre du cote one.
-		Optional<Entreprise> entrepriseOpt = entrepriseRepoistory.findById(entrepriseId);
-		Entreprise entreprise = null;
-		if (entrepriseOpt.isPresent())
-			entreprise = entrepriseOpt.get();
-		Optional<Departement> departementOpt = deptRepoistory.findById(depId);
-		Departement departement = null;
-		if (departementOpt.isPresent())
-			departement = departementOpt.get();
+	public Boolean affecterDepartementAEntreprise(int depId, int entrepriseId) {
+		Boolean isAffect=false;
+		Entreprise entrepriseOpt = entrepriseRepoistory.findById(entrepriseId).orElseThrow(null);
+		Entreprise entreprise = entrepriseOpt;
+		Departement departementOpt = deptRepoistory.findById(depId).orElseThrow(null);
+		Departement departement = departementOpt;	
 		if (departement != null){		
 		    departement.setEntreprise(entreprise);
 	        deptRepoistory.save(departement);
+	        isAffect=true;
 	        }
-		
+		return isAffect;
 	}
 	
 	public List<String> getAllDepartementsNamesByEntreprise(int entrepriseId) {

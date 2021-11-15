@@ -1,16 +1,25 @@
 package tn.esprit.spring;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import javax.validation.constraints.AssertTrue;
 
-
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.test.context.junit4.SpringRunner;
-
 
 import tn.esprit.spring.entities.Departement;
 import tn.esprit.spring.entities.Entreprise;
@@ -18,156 +27,99 @@ import tn.esprit.spring.repository.DepartementRepository;
 import tn.esprit.spring.repository.EntrepriseRepository;
 import tn.esprit.spring.services.IEntrepriseService;
 
-
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class EntrepriseTest {
-	
-	
-	
+
 	private static final String MSG = "entrepriseTest1";
 	@Autowired
-	IEntrepriseService entreService;
+	IEntrepriseService entrepriseService;
 
-	
 	@Autowired
-	EntrepriseRepository entreRep;
-	
+	EntrepriseRepository entrepriseRepository;
+
 	@Autowired
 	DepartementRepository departementRerpository;
 
-	Entreprise entreprise;
-	
-	
-	
+	int entrepriseId, departementId;
+
+	@Before
+	public void initialisation() {
+		Entreprise entreprise = new Entreprise("Esprit", "Education");
+		Departement departement = new Departement("mobile");
+		entrepriseId = entrepriseService.ajouterEntreprise(entreprise);
+		departementId = entrepriseService.ajouterDepartement(departement);
+
+	}
+
+	@After
+	public void suppression() {
+		entrepriseRepository.deleteById(entrepriseId);
+		departementRerpository.deleteById(departementId);
+	}
+
+	@Test
+	public void ajouterEntrepriseTest() {
+		assertTrue("ajout  entreprise echouer", entrepriseRepository.findById(entrepriseId).isPresent());
+	}
+
 	@Test
 	public void ajouterDepartementTest() {
-		Departement depTest = new Departement(MSG);
-		
-		int idDepartement=entreService.ajouterDepartement(depTest);
-
-		Departement dep =departementRerpository.findById(idDepartement).orElse(null);
-		
-		if(idDepartement!=0 && dep!=null && dep.getName().equals(MSG)) 
-				
-					entreService.deleteDepartementById(idDepartement);	
-
+		assertTrue("ajout departrement echouer", departementRerpository.findById(departementId).isPresent());
 	}
 
-
-
-     
-
-	
-	
+	@Test
+	public void affecterDepartementAEntrepriseTest() {
+		Entreprise entreprise = new Entreprise();
+		Departement departement = new Departement();
+		int idDep = departementRerpository.save(departement).getId();
+		int idEnt = entrepriseRepository.save(entreprise).getId();
+		assertTrue("affectation echouer", entrepriseService.affecterDepartementAEntreprise(idDep, idEnt));
+		departementRerpository.deleteById(idDep);
+		entrepriseRepository.deleteById(idEnt);
+	}
 
 	@Test
-	public void ajouterEntrepriseTest  ()
+	public void getAllDepartementsNamesByEntrepriseTest() {
+		Entreprise ent = new Entreprise("entreprise To find", "");
+
+		int entreId = entrepriseService.ajouterEntreprise(ent);
+		Departement department = new Departement("department Test 1");
+
+		int depId = entrepriseService.ajouterDepartement(department);
+
+		Departement department2 = new Departement("department Test 2");
+
+		int depId2 = entrepriseService.ajouterDepartement(department2);
+
+		entrepriseService.affecterDepartementAEntreprise(depId, entreId);
+		entrepriseService.affecterDepartementAEntreprise(depId2, entreId);
+
+		List<String> result = entrepriseService.getAllDepartementsNamesByEntreprise(entreId);
+
+		assertTrue("test echouer", result.contains("department Test 1") && result.size() == 2);
+		entrepriseService.deleteDepartementById(depId);
+		entrepriseService.deleteDepartementById(depId2);
+		entrepriseService.deleteEntrepriseById(entreId);
+
+	}
+	@Test
+	public void deleteEntreprisebyIdTest() throws InterruptedException  {
+		int id=entrepriseRepository.save(new Entreprise()).getId();
+		entrepriseService.deleteEntrepriseById(id);
+		assertFalse("test echouer", entrepriseRepository.findById(id).isPresent());
+	}
+	@Test
+	public void supprimerDepartementTest()
 	{
-		Entreprise entrepTest = new Entreprise (MSG,"raisonTest1");
-		int entreId = entreService.ajouterEntreprise(entrepTest);
-		if(entreId!=0)
-		{
-		Entreprise ent =entreRep.findById(entreId).orElse(null);
-		
-		if(ent !=null && ent.getName().equals(MSG)) 		
-			entreService.deleteEntrepriseById(entreId);}
-		
+		int id=departementRerpository.save(new Departement()).getId();
+	     entrepriseService.deleteDepartementById(id);
+	     assertFalse("test echouer",departementRerpository.findById(id).isPresent());
 	}
-	
-	
 	@Test
-	public void affecterDepartementAEntrepriseTest ()
+	public void getEntrepriseByIdTest()
 	{
-		Entreprise entreprise2 = new Entreprise ("entrepriseTest2","raisonTest2");
-		Departement department = new Departement("departmenTest1");
-		int entreId=entreService.ajouterEntreprise(entreprise2);
-		int depId=entreService.ajouterDepartement(department);
-		
-		entreService.affecterDepartementAEntreprise(depId, entreId);
-        List<String> result = entreService.getAllDepartementsNamesByEntreprise(entreId);
-        if(result.contains("departmenTest1") && result.size()==1) {
-    		entreService.deleteDepartementById(depId);
-    		entreService.deleteEntrepriseById(entreId);
-        }
-	   
-	   
+		assertNotNull("test echouer", entrepriseRepository.findById(entrepriseId));
 	}
-	
-	@Test
-	public void deleteEntreprisebyIdTest ()
-	{
-		Entreprise entreprise3 = new Entreprise ("entrepriseTest3","raisonTest3");
-		int idEntreprise=entreService.ajouterEntreprise(entreprise3);
-		
-		if(idEntreprise!=0) {
-			Entreprise ent =entreRep.findById(idEntreprise).orElse(null);
-			if(ent!=null)
-				entreService.deleteEntrepriseById(idEntreprise);
 
-		}
-	}
-	
-	@Test
-	public void getEntreprisebyIdTest ()
-	{
-		Entreprise entreprise4 = new Entreprise ("entrepriseTest4","raisonTest4");
-		int entreId = entreService.ajouterEntreprise(entreprise4);
-		entreService.getEntrepriseById(entreId);
-	
-		
-		if(entreprise !=null ) 		
-			entreService.deleteEntrepriseById(entreId);}
-		
-		
-
-
-	
-	
-	@Test
-	public void suprimerDepartementTest() {
-		Departement depTest = new Departement("production");
-		int idDepartement=entreService.ajouterDepartement(depTest);
-		
-		if(idDepartement!=0) {
-			Departement ent =departementRerpository.findById(idDepartement).orElse(null);
-			if(ent!=null)
-				entreService.deleteEntrepriseById(idDepartement);
-			
-		}
-	}
-	
-	@Test
-	public void  getAllDepartementsNamesByEntrepriseTest() {
-		this.entreprise = new Entreprise();
-		this.entreprise.setName("entreprise To find");
-		int entreId=entreService.ajouterEntreprise(this.entreprise);
-		Departement department= new Departement();
-		department.setName("department Test 1");
-		int depId=entreService.ajouterDepartement(department);
-		
-		Departement department2= new Departement();
-		department2.setName("department Test 2");
-		int depId2=entreService.ajouterDepartement(department2);
-		
-		entreService.affecterDepartementAEntreprise(depId, entreId);
-		entreService.affecterDepartementAEntreprise(depId2, entreId);
-		
-		List<String> result = entreService.getAllDepartementsNamesByEntreprise(entreId);
-		
-		 if(result.contains("department Test 1") && result.size()==2) {
-	    		entreService.deleteDepartementById(depId);
-	    		entreService.deleteDepartementById(depId2);
-	    		entreService.deleteEntrepriseById(entreId);
-	        }
-		
-		
-		
-		
-		
-	}
-	
-	
-
-	
 }
