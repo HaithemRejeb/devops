@@ -40,6 +40,15 @@ public class EntreprieTest {
 	
 	
 	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	@Test
 	public void ajouterDepartementTest() {
 		Departement depTest = new Departement(MSG);
